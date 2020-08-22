@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  gm-service-1:
+    build: .
+    image: psoliveira/gm-service
+    restart: always
+    container_name: "gm-service-1"
+    ports:
+      - "5010:5000"
+    environment:
+      - DATABASE_URI=postgresql://gm_db_usr:gm_db_pwd@gm_db:5432/gm_db
+    depends_on:
+      - gm_db
+
+  gm-service-2:
+    build: .
+    image: psoliveira/gm-service
+    restart: always
+    container_name: "gm-service-2"
+    ports:
+      - "5020:5000"
+    environment:
+      - DATABASE_URI=postgresql://gm_db_usr:gm_db_pwd@gm_db:5432/gm_db
+    depends_on:
+      - gm_db
+
+  gm_db:
+    image: postgres:12.1-alpine
+    restart: always
+    container_name: "gm-db"
+    volumes:
+      - /Users/pedro/docker/volumes/postgres-gm-db/:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=gm_db_usr
+      - POSTGRES_PASSWORD=gm_db_pwd
+      - POSTGRES_DB=gm_db
+
+  nginx:
+    build: ./nginx
+    image: nginx:latest
+    restart: always
+    container_name: "gm-nginx"
+    ports:
+      - "80:80"
+    depends_on:
+      - gm-service-1
+      - gm-service-2
